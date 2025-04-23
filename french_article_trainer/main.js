@@ -190,7 +190,7 @@ function displayScores(){
         table.append(
             `<tr><td>${k}</td><td>${correct.toFixed(2)} / ${v.length}</td><td>${(average*100).toFixed(0)}%</td></tr>`
         );
-        weakPoints[k] = 1-average;
+        weakPoints[k] = Math.max(1-average, 0.3);
         total += v.length;
         totalCorrect += correct;
     });
@@ -218,7 +218,7 @@ function normWeakpoints(){
     $.each(articles, function(k, v){
         // If k is a string
         if (typeof k === 'string') {
-            weakPoints[k] = Math.max(v, 0.1) / total;
+            weakPoints[k] = 1 / total;
         }
     });
 }
