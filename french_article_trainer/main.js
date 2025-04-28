@@ -9,6 +9,7 @@ let currentStreak = 0;
 
 let beatStreakRecord = false;
 let beatHighScore = false;
+let jsonData;
 
 // Custom random float generator function
 function getRandomFloat() {
@@ -142,14 +143,15 @@ function displayQuestion(questionData, i, article){
 
 function scoreQuestion(answer){
 
-    let userAnswer = [];
-    $('input:checked').each(function() {
-        userAnswer.push($(this).attr('value'));
-    });
+    let userAnswer = $('input[name=article]:checkbox:checked').map(function() {
+        return this.value;
+    }).get();
 
     let score, feedback, feedbackClass;
     if (userAnswer.indexOf(answer)!==-1) {
-        score = 1 / userAnswer.length;
+        score = (typeof userAnswer === 'object') ? 1 / userAnswer.length : 1;
+        console.log(userAnswer, score);
+
         feedback = "Correct!";
         if (userAnswer.length > 1) {
             feedback += " The answer was " + answer + ".";
@@ -236,6 +238,7 @@ function main(questionData){
         return obj;
     }, {});
 
+    $('#question-form').empty();
     // Create radio buttons
     articles.forEach((a) => {
         $('#question-form').prepend(
@@ -248,21 +251,35 @@ function main(questionData){
 }
 
 
+function setupShuffleButton() {
+    $('#shuffle-button').on('click', function() {
+        setupQuestions();
+    });
+}
+
+
+function setupQuestions(){
+    jsonData['qs'].sort(() => (getRandomFloat()-0.5) * 10);
+    for (let i=0; i<jsonData['qs'].length; i++){
+        let article = jsonData['qs'][i][0];
+        let question = jsonData['qs'][i][1];
+        if (questionsByArticle[article] === undefined){
+            questionsByArticle[article] = [];
+        }
+        questionsByArticle[article].push(question);
+    }
+    main(jsonData['qs']);
+}
+
+
 $(document).ready(function(){
     loadHighScore();
     loadStreakScore();
     $.getJSON("./qs.json", function(json) {
+        jsonData = json;
         // shuffle array
-        json['qs'].sort(() => (getRandomFloat()-0.5) * 10);
-        for (let i=0; i<json['qs'].length; i++){
-            let article = json['qs'][i][0];
-            let question = json['qs'][i][1];
-            if (questionsByArticle[article] === undefined){
-                questionsByArticle[article] = [];
-            }
-            questionsByArticle[article].push(question);
-        }
-        main(json['qs']);
+        setupShuffleButton();
+        setupQuestions();
     });
 });
 
