@@ -253,6 +253,7 @@ function main(questionData){
 
 function setupShuffleButton() {
     $('#shuffle-button').on('click', function() {
+        console.log('click');
         setupQuestions();
     });
 }
